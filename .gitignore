@@ -1,0 +1,12 @@
+echo "venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.ipynb_checkpoints/" > .gitignore
+*.conda
+*.lock
+.env
