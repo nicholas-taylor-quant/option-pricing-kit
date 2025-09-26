@@ -1,10 +1,3 @@
-Perfect 👌 — a polished `README.md` will make the repo instantly look professional. Since you’re targeting **quant + SWE best practices**, let’s keep it structured, minimal, and clear.
-
----
-
-# 📄 Draft `README.md`
-
-````markdown
 # Option Pricing Kit
 
 `optionkit` is a modular Python package for option pricing and risk analysis.
@@ -40,7 +33,7 @@ Clone and install in editable mode:
 git clone https://github.com/nicholas-taylor-quant/option-pricing-kit.git
 cd option-pricing-kit
 pip install -e .
-````
+```
 
 Or with Conda:
 
