@@ -5,7 +5,7 @@ from optionkit.core.factory import register_model
 
 @register_model("TrinomialTree")
 class TrinomialTreeModel(TreeModel):
-    """Trinomial tree option pricing model."""
+    """Trinomial tree option pricing model (Jarrow–Rudd)."""
 
     def __init__(self, spot: float, rate: float, vol: float, steps: int = 100):
         super().__init__(steps)
@@ -14,43 +14,44 @@ class TrinomialTreeModel(TreeModel):
         self.vol = vol
 
     def _build_tree(self, option):
-        """
-        Build stock price tree.
-        Each node has 3 branches: up, middle, down.
-        """
         dt = option.maturity / self.steps
-        dx = self.vol * math.sqrt(3 * dt)
+        v = self.vol
+        r = self.rate
 
-        u = math.exp(dx)   # up
-        d = math.exp(-dx)  # down
-        m = 1.0            # middle
+        # Boyle (1986) symmetric trinomial
+        u = math.exp(v * math.sqrt(2 * dt))
+        d = 1 / u
+        m = 1.0
 
-        pu = 1/6 + (self.rate - 0.5*self.vol**2) * math.sqrt(dt/(12*self.vol**2))
-        pm = 2/3
-        pd = 1 - pu - pm
+        pu = 1.0 / 6.0
+        pm = 2.0 / 3.0
+        pd = 1.0 / 6.0
 
         self.u, self.d, self.m = u, d, m
         self.pu, self.pm, self.pd = pu, pm, pd
         self.dt = dt
 
-        # build tree structure
-        tree = [[self.spot * (u**j) * (d**(i-j)) for j in range(i+1)] for i in range(self.steps+1)]
+        # Recombining trinomial tree: 2t+1 nodes at time t
+        tree = [[0.0 for _ in range(2 * i + 1)] for i in range(self.steps + 1)]
+        tree[0][0] = self.spot
+
+        for t in range(1, self.steps + 1):
+            for j in range(2 * t + 1):
+                k = j - t
+                tree[t][j] = self.spot * (u ** max(0, k)) * (d ** max(0, -k))
+
         return tree
 
+
     def _step(self, i, t, payoffs, option):
-        """
-        Backward induction step:
-        discount expected payoff with trinomial probabilities.
-        """
-        # Trinomial: payoffs[i-1], payoffs[i], payoffs[i+1]
-        # Need to guard array edges.
-        pu, pm, pd = self.pu, self.pm, self.pd
+        """Backward induction with trinomial probabilities."""
         disc = math.exp(-self.rate * self.dt)
 
-        down = payoffs[i] if i == 0 else payoffs[i-1]
-        mid  = payoffs[i]
-        up   = payoffs[i+1] if i+1 < len(payoffs) else payoffs[i]
+        down = payoffs[i] if i == 0 else payoffs[i - 1]
+        mid = payoffs[i]
+        up = payoffs[i + 1] if i + 1 < len(payoffs) else payoffs[i]
 
-        return disc * (pu*up + pm*mid + pd*down)
+        return disc * (self.pu * up + self.pm * mid + self.pd * down)
+
 
 
