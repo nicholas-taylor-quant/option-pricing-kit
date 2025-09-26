@@ -1,5 +1,7 @@
 from optionkit.core.option import Option
+from optionkit.core.factory import register_option
 
+@register_option("EuropeanOption")
 class EuropeanOption(Option):
     """
     Standard European option.
