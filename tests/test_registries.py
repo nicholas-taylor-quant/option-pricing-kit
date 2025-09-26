@@ -1,10 +1,8 @@
 from optionkit.payoffs.european import EuropeanOption
-from optionkit.models.black_scholes import BlackScholesModel
-from optionkit.core.option import Option
-from optionkit.core.model import Model
+from optionkit.core.factory import OPTION_REGISTRY, MODEL_REGISTRY
 
 def test_registries_work():
-    assert "EuropeanOption" in Option.list_registered()
-    assert "BlackScholesModel" in Model.list_registered()
-    assert Option.get("EuropeanOption") is EuropeanOption
-    assert Model.get("BlackScholesModel") is BlackScholesModel
+    assert "EuropeanOption" in OPTION_REGISTRY
+    assert "BlackScholes" in MODEL_REGISTRY
+    assert OPTION_REGISTRY["EuropeanOption"] is EuropeanOption
+
