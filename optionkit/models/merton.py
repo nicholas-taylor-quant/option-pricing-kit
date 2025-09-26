@@ -1,7 +1,9 @@
 import numpy as np
 from optionkit.core.model import Model
 from optionkit.core.option import Option
+from optionkit.core.factory import register_model
 
+@register_model("Merton")
 class MertonModel(Model):
     """
     Merton jump-diffusion model.

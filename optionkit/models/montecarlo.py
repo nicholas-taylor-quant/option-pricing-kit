@@ -1,7 +1,9 @@
 import numpy as np
 from optionkit.core.model import Model
 from optionkit.core.option import Option
+from optionkit.core.factory import register_model
 
+@register_model("MonteCarlo")
 class MonteCarloModel(Model):
     """
     Monte Carlo pricing under GBM dynamics.

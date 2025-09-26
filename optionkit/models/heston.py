@@ -1,7 +1,9 @@
 import numpy as np
 from optionkit.core.model import Model
 from optionkit.core.option import Option
+from optionkit.core.factory import register_model
 
+@register_model("Heston")
 class HestonModel(Model):
     """
     Heston stochastic volatility model.
