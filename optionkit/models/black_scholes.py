@@ -1,8 +1,7 @@
-import math
 from scipy.stats import norm
-from optionkit.core.model import Model
+from optionkit.core import Model
 from optionkit.core.math_utils import d1_d2, discount
-from optionkit.core.factory import register_model
+from optionkit.core import register_model
 
 @register_model("BlackScholes")
 class BlackScholesModel(Model):
