@@ -1,11 +1,25 @@
 # optionkit/core/factory.py
-from typing import Type
-from optionkit.core.model import Model
-from optionkit.core.option import Option
+from __future__ import annotations
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Dict, List, Type
+
+from .model import Model
+from .option import Option
 
 # === Registries ===
-MODEL_REGISTRY = {}
-OPTION_REGISTRY = {}
+MODEL_REGISTRY: Dict[str, Type[Model]] = {}
+OPTION_REGISTRY: Dict[str, Type[Option]] = {}
+
+# Small record to trace creations (handy in tests/debug)
+@dataclass(slots=True)
+class CreationRecord:
+    when: datetime
+    kind: str          # "model" or "option"
+    name: str
+    kwargs: Dict[str, Any]
+
+_CREATION_LOG: List[CreationRecord] = []
 
 # === Decorators ===
 def register_model(name: str):
@@ -25,16 +39,47 @@ def register_option(name: str):
 # === Factory functions ===
 def create_model(name: str, **kwargs) -> Model:
     """Factory to create a pricing model by name."""
-    if name not in MODEL_REGISTRY:
+    try:
+        cls = MODEL_REGISTRY[name]
+    except KeyError:
         raise ValueError(
-            f"Model '{name}' not found. Available: {list(MODEL_REGISTRY.keys())}"
+            f"Model '{name}' not found. Available: {list_models()}"
         )
-    return MODEL_REGISTRY[name](**kwargs)
+    _CREATION_LOG.append(CreationRecord(datetime.now(), "model", name, dict(kwargs)))
+    return cls(**kwargs)
 
 def create_option(name: str, **kwargs) -> Option:
     """Factory to create an option payoff by name."""
-    if name not in OPTION_REGISTRY:
+    try:
+        cls = OPTION_REGISTRY[name]
+    except KeyError:
         raise ValueError(
-            f"Option '{name}' not found. Available: {list(OPTION_REGISTRY.keys())}"
+            f"Option '{name}' not found. Available: {list_options()}"
         )
-    return OPTION_REGISTRY[name](**kwargs)
+    _CREATION_LOG.append(CreationRecord(datetime.now(), "option", name, dict(kwargs)))
+    return cls(**kwargs)
+
+# === Introspection helpers (pretty + uniform) ===
+def list_models() -> List[str]:
+    """Return registered model names (sorted)."""
+    return sorted(MODEL_REGISTRY.keys())
+
+def list_options() -> List[str]:
+    """Return registered option names (sorted)."""
+    return sorted(OPTION_REGISTRY.keys())
+
+def describe_registry() -> str:
+    """Pretty string for both registries (for logs/CLI/tests)."""
+    lines: List[str] = []
+    lines.append("Models:")
+    for name, cls in sorted(MODEL_REGISTRY.items()):
+        lines.append(f"  - {name}: {cls.__module__}.{cls.__name__}")
+    lines.append("Options:")
+    for name, cls in sorted(OPTION_REGISTRY.items()):
+        lines.append(f"  - {name}: {cls.__module__}.{cls.__name__}")
+    return "\n".join(lines)
+
+def recent_creations(n: int = 20) -> List[CreationRecord]:
+    """Most recent creations (models and options) with kwargs."""
+    return _CREATION_LOG[-n:]
+
