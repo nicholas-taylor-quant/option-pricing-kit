@@ -1,8 +1,23 @@
 from abc import ABC, abstractmethod
 import copy
+from dataclasses import is_dataclass, fields
 
 class Model(ABC):
     """Abstract base for all pricing models."""
+    def __repr__(self):
+        cls = self.__class__.__name__
+        try:
+            if is_dataclass(self):
+                items = [(f.name, getattr(self, f.name)) for f in fields(self)]
+            else:
+                items = getattr(self, "__dict__", {}).items()
+        except Exception:
+            items = []
+        def fmt(v):
+            s = repr(v)
+            return (s[:57] + "…") if len(s) > 60 else s
+        kws = ", ".join(f"{k}={fmt(v)}" for k, v in items)
+        return f"{cls}({kws})"
 
     @abstractmethod
     def price(self, option):
