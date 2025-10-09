@@ -1,49 +1,35 @@
-from abc import ABC, abstractmethod
-from typing import Dict, Type
+# optionkit/core/option.py
+from __future__ import annotations
 
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+
+@dataclass(slots=True, repr=True, eq=True)
 class Option(ABC):
     """
     Abstract base class for option contracts.
-    Provides registry functionality for all subclasses.
+    Contains only common fields and UX helpers.
+    Registry duties are handled by optionkit.core.factory.
     """
-
-    # Class-level registry for all options
-    registry: Dict[str, Type["Option"]] = {}
-
-    def __init_subclass__(cls, **kwargs):
-        """Automatically register subclasses by class name."""
-        super().__init_subclass__(**kwargs)
-        Option.registry[cls.__name__] = cls
-
-    def __init__(self, strike: float, maturity: float, is_call: bool = True):
-        self.strike = strike
-        self.maturity = maturity
-        self.is_call = is_call
+    strike: float
+    maturity: float
+    is_call: bool = True
 
     @abstractmethod
-    def payoff(self, spot: float) -> float:
+    def payoff(self, x, /) -> float:
         """
-        Compute payoff at maturity given spot price.
-        Must be implemented by subclasses.
+        Compute payoff given terminal input.
+
+        Conventions:
+        - Spot-based options (European, American, Digital) implement payoff(spot: float) -> float
+        - Path-based options (Asian) implement payoff(path: Sequence[float]) -> float
         """
-        pass
+        raise NotImplementedError
 
     def describe(self) -> str:
-        """Human-readable description of the contract."""
         kind = "Call" if self.is_call else "Put"
         return f"{kind} Option: strike={self.strike}, maturity={self.maturity}"
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:  # optional override for a friendlier string
         return self.describe()
-
-    # --- Class methods for registry usage ---
-    @classmethod
-    def list_registered(cls):
-        """List all registered option types."""
-        return list(cls.registry.keys())
-
-    @classmethod
-    def get(cls, name: str):
-        """Fetch an option class by name."""
-        return cls.registry.get(name)
 
