@@ -1,16 +1,13 @@
+# optionkit/payoffs/digital.py
+from dataclasses import dataclass
 from optionkit.core.option import Option
+from optionkit.core.factory import register_option
 
+@register_option("DigitalOption")
+@dataclass(slots=True, repr=False, eq=True)
 class DigitalOption(Option):
-    """
-    Cash-or-nothing digital option.
-    """
-
-    def __init__(self, strike: float, maturity: float, is_call: bool = True, payout: float = 1.0):
-        super().__init__(strike, maturity, is_call)
-        self.payout = payout
+    """Cash-or-nothing digital option."""
+    payout: float = 1.0
 
     def payoff(self, spot: float) -> float:
-        if self.is_call:
-            return self.payout if spot > self.strike else 0.0
-        else:
-            return self.payout if spot < self.strike else 0.0
+        return self.payout if ((spot > self.strike) if self.is_call else (spot < self.strike)) else 0.0

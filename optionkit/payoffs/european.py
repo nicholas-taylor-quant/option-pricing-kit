@@ -8,4 +8,4 @@ class EuropeanOption(Option):
     """
 
     def payoff(self, spot: float) -> float:
-        return max(spot - self.strike, 0) if self.is_call else max(self.strike - spot, 0)
+        return max(spot - self.strike, 0.0) if self.is_call else max(self.strike - spot, 0.0)

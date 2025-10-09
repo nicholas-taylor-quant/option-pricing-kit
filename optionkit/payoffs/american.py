@@ -1,5 +1,7 @@
 from optionkit.core.option import Option
+from optionkit.core.factory import register_option
 
+@register_option("AmericanOption")
 class AmericanOption(Option):
     """
     American option — exercise allowed any time before maturity.
