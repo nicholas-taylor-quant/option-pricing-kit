@@ -1,7 +1,7 @@
 import pytest
-from optionkit.payoffs.european import EuropeanOption
-from optionkit.models.trinomial import TrinomialTreeModel
-from optionkit.models.black_scholes import BlackScholesModel
+from optionkit.payoffs import EuropeanOption
+from optionkit.models import TrinomialTreeModel
+from optionkit.models import BlackScholesModel
 
 
 @pytest.mark.parametrize("scheme", ["boyle", "jr", "tian", "kr"])
